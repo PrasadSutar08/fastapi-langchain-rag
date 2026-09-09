@@ -1,0 +1,25 @@
+# Build context for both backend and frontend Dockerfiles is the
+# repo root (see docker-compose.yml `context: ..`). Docker's
+# .dockerignore matching is NOT the same as .gitignore: a bare
+# ".venv/" only matches a .venv folder at the root of the context,
+# not one nested inside backend/. Using "**/" prefixes matches at
+# any depth, which is what actually excludes backend/.venv/ and
+# frontend/node_modules/ from the build.
+
+**/.venv/
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/.pytest_cache/
+**/.mypy_cache/
+
+.git/
+frontend/dist/
+frontend/*.tsbuildinfo
+backend/storage/
+data/extraction/
+
+.env
+.env.*
+!.env.example
+!frontend/.env.example

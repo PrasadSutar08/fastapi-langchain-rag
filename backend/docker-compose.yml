@@ -43,18 +43,23 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    # Loads every variable from the real root .env -- this is what
+    # was actually missing before. Docker Compose's ${VAR:-default}
+    # substitution only reads a .env file sitting next to this
+    # docker-compose.yml (i.e. backend/.env, which doesn't exist),
+    # NOT the root .env the app itself uses -- so every value below
+    # was silently falling back to its hardcoded default, including
+    # FIRST_SUPERUSER/FIRST_SUPERUSER_PASSWORD, regardless of what
+    # was actually in .env. env_file fixes that by loading the real
+    # file directly; only the handful of values that must genuinely
+    # differ inside Docker's network are overridden below.
+    env_file:
+      - ../.env
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_NAME: ${DB_NAME:-ragdb}
-      DB_USER: ${DB_USER:-postgres}
-      DB_PASS: ${DB_PASS:-postgres}
       REDIS_URL: redis://redis:6379/0
-      SECRET_KEY_ACCESS_API: ${SECRET_KEY_ACCESS_API:-change-this-secret}
-      FIRST_SUPERUSER: ${FIRST_SUPERUSER:-admin@example.com}
-      FIRST_SUPERUSER_PASSWORD: ${FIRST_SUPERUSER_PASSWORD:-change-this-password}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
-      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen2.5:7b}
       CORS_ORIGINS: http://localhost:5173
     extra_hosts:
       - "host.docker.internal:host-gateway"

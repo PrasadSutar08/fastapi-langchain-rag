@@ -1,0 +1,15 @@
+# Only needed for EMBEDDING_PROVIDER=local (self-hosted embeddings).
+#
+# Installed by default (see backend/Dockerfile's INSTALL_LOCAL_EMBEDDINGS
+# build arg) so local development and open-source users get self-hosted
+# embeddings working out of the box, matching this project's default
+# EMBEDDING_PROVIDER=local.
+#
+# Deliberately NOT installed in the deployed image (INSTALL_LOCAL_EMBEDDINGS
+# set to false there, alongside EMBEDDING_PROVIDER=cohere) -- these packages
+# alone need more RAM to even install than most free hosting tiers provide
+# (512MB), the same underlying constraint that made self-hosting the LLM
+# (Ollama) impractical for a free public deployment.
+langchain-huggingface==1.2.2
+sentence-transformers==6.0.0
+torch==2.5.1

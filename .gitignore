@@ -1,0 +1,64 @@
+# ==========================================================
+# Environment files -- never commit real secrets, but keep
+# the .example files so others know what to configure.
+# ==========================================================
+.env
+.env.*
+!.env.example
+!frontend/.env.example
+
+# ==========================================================
+# Python / backend
+# ==========================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Testing / linting caches
+.pytest_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+
+# ==========================================================
+# Frontend / Node
+# ==========================================================
+frontend/node_modules/
+frontend/dist/
+frontend/*.tsbuildinfo
+
+# ==========================================================
+# Project-specific runtime data (this repo)
+# ==========================================================
+backend/storage/
+data/extraction/*.json
+
+# ==========================================================
+# Logs
+# ==========================================================
+*.log
+
+# ==========================================================
+# Editor / OS junk
+# ==========================================================
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

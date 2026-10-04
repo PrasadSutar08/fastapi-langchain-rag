@@ -8,6 +8,8 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from starlette.exceptions import HTTPException as StarletteHTTPException
+from app.services.embedding_service import embedding_service
+from app.init_db import create_super_user
 
 from sqlmodel import SQLModel
 
@@ -46,6 +48,12 @@ async def lifespan(app: FastAPI):
         logger.info(
             "Database tables and pgvector extension verified/created."
         )
+
+        try:
+            create_super_user()
+            logger.info("Superuser verified/created.")
+        except Exception as exc:
+            logger.exception(f"Superuser creation failed | error={exc}")
 
     if settings.TESTING:
         yield

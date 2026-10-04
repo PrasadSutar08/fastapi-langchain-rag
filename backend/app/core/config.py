@@ -236,6 +236,10 @@ class Settings(BaseSettings):
 
     GROQ_TIMEOUT_SECONDS: int = 30
 
+    GROQ_MAX_TOKENS: int = 1024
+
+    GROQ_REASONING_EFFORT: str = "low"
+
     # ==========================================================
     # HTTP
     # ==========================================================

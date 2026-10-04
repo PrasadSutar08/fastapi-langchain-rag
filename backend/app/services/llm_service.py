@@ -65,21 +65,30 @@ class LLMService:
                     "set it in .env."
                 )
 
-            return ChatGroq(
-                model=settings.GROQ_MODEL,
-                api_key=settings.GROQ_API_KEY,
-                temperature=(
+            groq_kwargs: dict[str, Any] = {
+                "model": settings.GROQ_MODEL,
+                "api_key": settings.GROQ_API_KEY,
+                "temperature": (
                     settings.OLLAMA_TEMPERATURE
                     if temperature is None
                     else temperature
                 ),
-                max_tokens=(
-                    settings.OLLAMA_MAX_TOKENS
+                "max_tokens": (
+                    settings.GROQ_MAX_TOKENS
                     if num_predict is None
                     else num_predict
                 ),
-                timeout=settings.GROQ_TIMEOUT_SECONDS,
-            )
+                "timeout": settings.GROQ_TIMEOUT_SECONDS,
+            }
+            # Only supported by Groq's reasoning models (GPT-OSS,
+            # Qwen3) -- without this, those models can spend their
+            # entire token budget on hidden reasoning and return
+            # empty content, which is exactly what happened with the
+            # default effort level and our old, too-small token budget.
+            if settings.GROQ_REASONING_EFFORT:
+                groq_kwargs["reasoning_effort"] = settings.GROQ_REASONING_EFFORT
+
+            return ChatGroq(**groq_kwargs)
 
         if provider != "ollama":
             logger.warning(
@@ -122,23 +131,16 @@ class LLMService:
         return self.__class__._llm
 
     def _get_title_llm(self) -> BaseChatModel:
-        """
-        Separate low-token-budget model instance used only for title
-        generation.
-
-        NOTE: overriding num_predict/temperature via `.bind()` on the
-        shared instance does NOT work reliably across langchain-ollama
-        versions -- some versions forward bound kwargs straight to the
-        underlying ollama.Client().chat() call, which rejects them
-        ("Client.chat() got an unexpected keyword argument
-        'num_predict'"), silently breaking title generation. Building
-        a second instance with these fields set at construction time
-        (the same way get_llm() does) avoids that entirely, and works
-        identically for the Groq path.
-        """
         if self.__class__._title_llm is None:
+            provider = settings.LLM_PROVIDER.strip().lower()
+            # Reasoning models (Groq's GPT-OSS/Qwen3) spend part of
+            # the token budget on hidden reasoning before any visible
+            # content, so they need a larger budget than Ollama's
+            # qwen2.5 needs for this same short task, or they can
+            # return empty content entirely.
+            num_predict = 100 if provider == "groq" else 24
             self.__class__._title_llm = self._build_llm(
-                num_predict=24,
+                num_predict=num_predict,
                 temperature=0.0,
             )
         return self.__class__._title_llm
